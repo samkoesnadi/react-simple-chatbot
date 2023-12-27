@@ -57,7 +57,7 @@ class ChatBot extends Component {
     this.speak = speakFn(props.speechSynthesis);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     const { steps } = this.props;
     const {
       botDelay,
@@ -102,7 +102,7 @@ class ChatBot extends Component {
 
     if (firstStep.message) {
       const { message } = firstStep;
-      firstStep.message = typeof message === 'function' ? message() : message;
+      firstStep.message = typeof message === 'function' ? await message() : message;
       chatSteps[firstStep.id].message = firstStep.message;
     }
 
@@ -213,12 +213,12 @@ class ChatBot extends Component {
     return typeof trigger === 'function' ? trigger({ value, steps }) : trigger;
   };
 
-  getStepMessage = message => {
+  getStepMessage = async message => {
     const { previousSteps } = this.state;
     const lastStepIndex = previousSteps.length > 0 ? previousSteps.length - 1 : 0;
     const steps = this.generateRenderedStepsById();
     const previousValue = previousSteps[lastStepIndex].value;
-    return typeof message === 'function' ? message({ previousValue, steps }) : message;
+    return typeof message === 'function' ? await message({ previousValue, steps }) : message;
   };
 
   generateRenderedStepsById = () => {
@@ -239,7 +239,7 @@ class ChatBot extends Component {
     return steps;
   };
 
-  triggerNextStep = data => {
+  triggerNextStep = async data => {
     const { enableMobileAutoFocus } = this.props;
     const { defaultUserSettings, previousSteps, renderedSteps, steps } = this.state;
 
@@ -292,7 +292,7 @@ class ChatBot extends Component {
       let nextStep = Object.assign({}, steps[trigger]);
 
       if (nextStep.message) {
-        nextStep.message = this.getStepMessage(nextStep.message);
+        nextStep.message = await this.getStepMessage(nextStep.message);
       } else if (nextStep.update) {
         const updateStep = nextStep;
         nextStep = Object.assign({}, steps[updateStep.update]);
